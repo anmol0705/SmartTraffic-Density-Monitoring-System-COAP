@@ -88,18 +88,3 @@ The frontend auto-maps keys that start with `lane1`, `lane2`, etc., and displays
 curl http://localhost:3000/latest
 ```
 
-- If you want to test without the COAP source, you can temporarily add a small debug route that returns a sample payload, or I can add a dev button to the UI that injects mock data for visual testing.
-
-**Common fixes**
-- Server not starting: ensure Node.js is installed and run `npm install` in `backend`.
-- Poller not updating: verify `POLL_URL` is reachable (network, firewall) and check `scrapper.js` console output.
-
-**Contributions & Next Steps**
-- Convert the static frontend to a React app (Vite) if you prefer componentization.
-- Add authentication, persistence (DB) for historical data, or WebSocket push updates for lower latency.
-
-**License & Notes**
-- No license file included. Treat as a personal/experimental project.
-
----
-If you'd like, I can also add a small developer-only mock button to `public/index.html` to inject sample `/latest` payloads for UI verification — would you like that?
