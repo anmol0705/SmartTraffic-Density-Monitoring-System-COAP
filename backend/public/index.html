@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Traffic Density Control System — COAP & Ultrasonic</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'], mono: ['ui-monospace','SFMono-Regular','Menlo','monospace'] },
+          colors: { 
+            // Defined colors for better readability and theme consistency
+            'dark-navy': '#0f172a', // slate-900 
+            'darkest-blue': '#020617', // slate-950
+            'lane-light': '#10b981', // emerald-500 
+            'lane-moderate': '#f59e0b', // amber-500
+            'lane-heavy': '#ef4444', // red-500
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Gradient Background (using Tailwind classes on <body>) */
+    body {
+        /* Set base text color for contrast */
+        color: #e2e8f0; 
+    }
+    /* Simple CSS for the bar chart rendering */
+    .bar-chart-container {
+        display: flex;
+        flex-direction: column-reverse; 
+        height: 200px; 
+        width: 100%;
+        gap: 8px;
+        padding-bottom: 5px;
+    }
+    .bar {
+        transition: height 0.5s ease-out;
+        width: 100%;
+        border-radius: 4px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    }
+    /* Custom style for the H1 text gradient */
+    .text-gradient {
+          background-image: linear-gradient(to right, #ffffff, #93c5fd); /* White to light blue */
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          color: transparent;
+      }
+  </style>
+</head>
+<body class="min-h-screen bg-darkest-blue bg-gradient-to-br from-darkest-blue via-dark-navy to-slate-900 text-lg">
+  <div class="max-w-7xl mx-auto p-4 md:p-8">
+    
+    <!-- HEADER AND METADATA -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 p-6 rounded-xl bg-dark-navy/80 backdrop-blur-sm border border-slate-700 shadow-2xl shadow-slate-900/50">
+      
+      <div class="flex items-center gap-4">
+        <div>
+          <!-- Title with Gradient Effect -->
+          <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-gradient">Smart Traffic Density Control</h1>
+          <p class="text-base md:text-lg text-slate-300 mt-1">COAP &amp; Ultrasonic Sensor — Live vehicle counting and analytics</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4 text-sm text-slate-500 font-semibold">
+        <div class="flex items-center">
+          <svg class="w-4 h-4 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0020.485 18H14v-3.582c0-.363.092-.727.283-1.042l1.625-2.617c.224-.36.54-.539.892-.539h2.327c.352 0 .668.179.892.539l1.625 2.617c.191.315.283.679.283 1.042V20M4.515 6.015A8.002 8.002 0 0119.515 6m-15 0a8.002 8.002 0 0115 0"></path></svg>
+          Auto-refresh: <span id="interval" class="font-mono text-white ml-1">1</span>s
+        </div>
+        <div class="flex items-center">
+          <svg class="w-4 h-4 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0L6.343 16.657a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Endpoint: <code class="text-xs text-white">/sink</code>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN DASHBOARD LAYOUT (CARDS + CHART) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Lane Cards (4 columns on large screens) -->
+      <div id="grid" class="lg:col-span-8 grid gap-6 grid-cols-1 sm:grid-cols-2"></div>
+
+      <!-- Global Density Chart (2 columns on large screens) -->
+      <div class="lg:col-span-4 bg-dark-navy/80 p-6 rounded-xl border border-slate-700 shadow-xl shadow-slate-900/50">
+        <h2 class="text-xl font-bold text-white mb-4 border-b border-slate-700/50 pb-2">Density Comparison</h2>
+        <div id="bar-chart-wrapper" class="h-64 flex justify-around items-end p-2 bg-slate-900/50 rounded-lg">
+          <!-- Chart bars will be dynamically injected here -->
+        </div>
+        <div id="chart-labels" class="flex justify-around text-xs mt-2 text-slate-400 font-mono">
+            <div>LANE 1</div>
+            <div>LANE 2</div>
+            <div>LANE 3</div>
+            <div>LANE 4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="mt-8 pt-4 border-t border-slate-700 text-sm text-slate-500">
+      Last Data Received: <span id="last" class="font-mono text-white">Waiting for data...</span>
+    </footer>
+  </div>
+
+  <script>
+    // Configuration
+    const INTERVAL_MS = 1000;
+    const DEFAULT_MAX_VEHICLES = 10;
+    const FIXED_LANES = ['lane1', 'lane2', 'lane3', 'lane4'];
+
+    document.getElementById('interval').textContent = INTERVAL_MS / 1000;
+
+    // --- CHART LOGIC ---
+    function updateBarChart(densityData) {
+        const wrapper = document.getElementById('bar-chart-wrapper');
+        wrapper.innerHTML = '';
+        
+        FIXED_LANES.forEach((key, index) => {
+            const density = densityData[key] !== undefined ? Number(densityData[key]) : 0;
+            const status = getStatus(density, 'vehicles');
+            const heightPercent = Math.min((density / DEFAULT_MAX_VEHICLES) * 100, 100);
+
+            const bar = document.createElement('div');
+            bar.className = `bar ${status.barClass}`;
+            bar.style.height = `${Math.max(10, heightPercent)}%`; // Minimum height for visibility
+            
+            // Add a label for the current value
+            bar.innerHTML = `<span class="text-xs text-white font-mono absolute bottom-full left-1/2 transform -translate-x-1/2">${density}</span>`;
+            bar.style.position = 'relative';
+
+            const barWrapper = document.createElement('div');
+            barWrapper.className = 'flex-1 h-full flex items-end justify-center';
+            barWrapper.appendChild(bar);
+            wrapper.appendChild(barWrapper);
+        });
+    }
+
+    // --- DATA FETCHING ---
+    async function fetchLatest() {
+        try {
+            // Using a mock fetch function for testing in non-Wokwi environment
+            // In Wokwi, this automatically fetches from the CoAP endpoint if the endpoint is defined
+            // return mockFetch(); 
+            const res = await fetch('/latest', { cache: 'no-store' });
+            if (res.status === 204) return null;
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return await res.json();
+        } catch (e) {
+            console.warn('Fetch failed (using mock data fallback)', e);
+            // Fallback to mock data if fetch fails (useful for development)
+            return mockDataFallback();
+        }
+    }
+
+    // Mock data generator (used as fallback/simulation)
+    function mockDataFallback() {
+        const obj = {};
+        FIXED_LANES.forEach((key) => {
+            // Generate realistic density numbers (0 to 10)
+            obj[key + '_density'] = Math.floor(Math.random() * 11);
+        });
+        return obj;
+    }
+
+    // --- UI/CARD GENERATION & UPDATE ---
+    
+    // Combined logic for status and color (matching C++ logic)
+    function getStatus(value, kind) {
+        const vnum = Number(value);
+        if (!isFinite(vnum)) return { statusText: 'N/A', statusClass: 'bg-slate-600', barClass: 'bg-slate-500' };
+
+        if (kind === 'vehicles') {
+            if (vnum >= Math.round(DEFAULT_MAX_VEHICLES * 0.7)) {
+                return { statusText: 'HEAVY', statusClass: 'bg-lane-heavy', barClass: 'bg-lane-heavy' };
+            } else if (vnum >= Math.round(DEFAULT_MAX_VEHICLES * 0.3)) {
+                return { statusText: 'MODERATE', statusClass: 'bg-lane-moderate', barClass: 'bg-amber-600' };
+            } else {
+                return { statusText: 'LIGHT', statusClass: 'bg-lane-light', barClass: 'bg-emerald-600' };
+            }
+        }
+        // Fallback or distance logic (assuming vehicle count for simplicity as per C++ file)
+        return { statusText: 'N/A', statusClass: 'bg-slate-600', barClass: 'bg-slate-500' };
+    }
+
+    function makeCard(id, label) {
+        const wrapper = document.createElement('div');
+        wrapper.id = id;
+        // Aesthetic improvements: darker card, subtle inner shadow, polished hover
+        wrapper.className = 'bg-dark-navy border border-slate-700 shadow-xl shadow-slate-900/50 rounded-xl p-6 transform transition duration-300 hover:scale-[1.03] hover:border-indigo-500';
+        wrapper.innerHTML = `
+          <div class="flex justify-between items-start mb-4">
+            <div class="text-2xl font-bold text-white">${label}</div>
+            <div id="${id}-mini" class="text-xs font-semibold text-white/50 px-2 py-0.5 rounded-full bg-slate-700/50">Count</div>
+          </div>
+          
+          <div class="text-xs text-slate-400 mb-4 flex items-center">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m-8 3h8m0 0l-4 4m4-4l-4-4"></path></svg>
+            Ultrasonic | COAP
+          </div>
+          
+          <div id="${id}-value" class="text-5xl font-mono font-extrabold text-white mt-3 leading-none">—</div>
+          <p class="text-xl text-slate-400 mb-6">vehicles</p>
+          
+          <!-- Density Progress Bar -->
+          <div class="w-full bg-slate-900 rounded-full h-4 overflow-hidden shadow-inner mb-4">
+            <div id="${id}-bar" class="h-full w-0 rounded-full transition-all duration-700 shadow-lg" style="background-image: linear-gradient(to right, #1e293b, #334155);"></div>
+          </div>
+          
+          <!-- Status Badge -->
+          <span id="${id}-status" class="inline-block mt-3 text-xs px-3 py-1 rounded-full font-bold text-slate-900">N/A</span>
+        `;
+        return wrapper;
+    }
+
+    function updateCard(id, raw) {
+        const vnum = Number(raw);
+        const kind = 'vehicles'; // Forced to vehicles as per C++ file structure
+        const status = getStatus(vnum, kind);
+        
+        const valueEl = document.getElementById(id + '-value');
+        const bar = document.getElementById(id + '-bar');
+        const statusEl = document.getElementById(id + '-status');
+
+        if (kind === 'vehicles') {
+            valueEl.textContent = vnum;
+            const pct = Math.min(100, Math.round((vnum / DEFAULT_MAX_VEHICLES) * 100));
+            bar.style.width = pct + '%';
+            // Update bar color using the status class
+            bar.className = bar.className.split(' ').filter(c => !c.startsWith('bg-')).join(' ');
+            bar.classList.add(status.barClass);
+        } else {
+            valueEl.textContent = String(raw);
+            bar.style.width = '2%';
+        }
+        
+        // Update status badge
+        statusEl.textContent = status.statusText;
+        statusEl.className = statusEl.className.split(' ').filter(c => !c.startsWith('bg-')).join(' ');
+        statusEl.classList.add(status.statusClass);
+    }
+
+    function ensureFourCards() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        FIXED_LANES.forEach((k, i) => {
+            const name = 'Lane ' + (i + 1);
+            grid.appendChild(makeCard(k, name));
+        });
+    }
+
+    ensureFourCards();
+
+    async function render(obj) {
+        if (!obj) {
+            document.getElementById('last').textContent = 'No data yet.';
+            // clear values
+            FIXED_LANES.forEach(k => updateCard(k, 0));
+            updateBarChart({});
+            return;
+        }
+
+        const densityData = {};
+        
+        // Find and update values
+        FIXED_LANES.forEach((k) => {
+            const short = k.replace(/[^0-9]/g, '');
+            let val = undefined;
+            // try exact key (e.g., lane1)
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                val = obj[k];
+            } else {
+                // try keys that start with the lane name (like lane1_density)
+                const candidate = Object.keys(obj).find(kk => kk.toLowerCase().startsWith(k.toLowerCase()));
+                if (candidate) val = obj[candidate];
+                else if (short && Object.prototype.hasOwnProperty.call(obj, short)) val = obj[short];
+            }
+            
+            val = (val === undefined || val === null) ? 0 : val;
+            updateCard(k, val);
+            densityData[k] = val;
+        });
+
+        // Update the Bar Chart with the new density data
+        updateBarChart(densityData);
+
+        document.getElementById('last').textContent = new Date().toLocaleTimeString();
+    }
+
+    // polling loop
+    async function loop() {
+        const latest = await fetchLatest();
+        if (latest) render(latest);
+        setTimeout(loop, INTERVAL_MS);
+    }
+
+    // start
+    loop();
+  </script>
+</body>
+</html>

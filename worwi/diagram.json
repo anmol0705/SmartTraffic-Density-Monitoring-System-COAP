@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "author": "Anmol-Jain-123CS0170",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": -441.6,
+      "left": -110.36,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1_in",
+      "top": -123.3,
+      "left": -253.7,
+      "attrs": { "distance": "337" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1_out",
+      "top": -120,
+      "left": -20,
+      "attrs": { "distance": "320" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic2_in",
+      "top": -17.7,
+      "left": -253.7,
+      "attrs": { "distance": "47" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic2_out",
+      "top": -20,
+      "left": -20,
+      "attrs": { "distance": "317" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic3_in",
+      "top": 78.3,
+      "left": -244.1,
+      "attrs": { "distance": "30" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic3_out",
+      "top": 80,
+      "left": -20,
+      "attrs": { "distance": "300" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic4_in",
+      "top": 183.9,
+      "left": -244.1,
+      "attrs": { "distance": "30" }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic4_out",
+      "top": 183.9,
+      "left": -13.7,
+      "attrs": { "distance": "300" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text1",
+      "top": -96,
+      "left": 220.8,
+      "attrs": { "text": "Lane 1\n" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text2",
+      "top": 19.2,
+      "left": 220.8,
+      "attrs": { "text": "Lane 2\n" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text3",
+      "top": 115.2,
+      "left": 220.8,
+      "attrs": { "text": "Lane 3" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "text4",
+      "top": 201.6,
+      "left": 220.8,
+      "attrs": { "text": "Lane 4" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "ultrasonic1_in:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic1_out:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic2_in:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic2_out:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic3_in:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic3_out:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic4_in:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic4_out:VCC", "esp:5V", "red", [] ],
+    [ "ultrasonic1_in:GND", "esp:GND.1", "black", [] ],
+    [ "ultrasonic1_out:GND", "esp:GND.1", "black", [] ],
+    [ "ultrasonic2_in:GND", "esp:GND.1", "black", [] ],
+    [ "ultrasonic2_out:GND", "esp:GND.1", "black", [] ],
+    [ "ultrasonic3_in:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic3_out:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic4_in:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic4_out:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic1_in:TRIG", "esp:5", "gold", [] ],
+    [ "ultrasonic1_in:ECHO", "esp:25", "cyan", [] ],
+    [ "ultrasonic1_out:TRIG", "esp:17", "gold", [] ],
+    [ "ultrasonic1_out:ECHO", "esp:26", "cyan", [] ],
+    [ "ultrasonic2_in:TRIG", "esp:16", "gold", [] ],
+    [ "ultrasonic2_in:ECHO", "esp:27", "cyan", [] ],
+    [ "ultrasonic2_out:TRIG", "esp:4", "gold", [] ],
+    [ "ultrasonic2_out:ECHO", "esp:14", "cyan", [] ],
+    [ "ultrasonic3_in:TRIG", "esp:18", "gold", [] ],
+    [ "ultrasonic3_in:ECHO", "esp:12", "cyan", [] ],
+    [ "ultrasonic3_out:TRIG", "esp:19", "gold", [] ],
+    [ "ultrasonic3_out:ECHO", "esp:13", "cyan", [] ],
+    [ "ultrasonic4_in:TRIG", "esp:21", "gold", [] ],
+    [ "ultrasonic4_in:ECHO", "esp:32", "cyan", [] ],
+    [ "ultrasonic4_out:TRIG", "esp:22", "gold", [] ],
+    [ "ultrasonic4_out:ECHO", "esp:33", "cyan", [] ]
+  ],
+  "dependencies": {}
+}
