@@ -49,7 +49,6 @@ const unsigned long sendInterval = 1000;
 
 // --- Ultrasonic Distance Measurement Function ---
 long getDistance(int trigPin, int echoPin) {
-  // Clear the trigger pin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   // Send a 10us pulse to trigger the sensor
@@ -127,7 +126,7 @@ void setup() {
   }
 
   // CoAP client setup
-  coap.response(callback_response);
+  coap.response(callback_response); // It gets called whenever you receive a message from the server
   coap.start();
 
   Serial.println("\nCoAP Client Started!");
@@ -158,6 +157,7 @@ void loop() {
     sensorOccupiedPrev[i][0] = isOccupied;
     
     delay(20); // Short delay to prevent sensor crosstalk
+    
     distance = getDistance(trigPins[i][1], echoPins[i][1]);
     isOccupied = (distance >= 0 && distance < threshold);
 
